@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CRM Customer Tier Predictor – predict customer value tiers from marketing campaign data" />
+  <title>CRM Tier Predictor</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">📊</div>
+        <span>CRM Tier Predictor</span>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙 Dark</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<main class="main">
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>Customer Tier Predictor</h1>
+      <p class="hero-subtitle">
+        Enter customer profile data to instantly predict their value tier and receive
+        actionable CRM recommendations powered by your marketing campaign dataset.
+      </p>
+    </section>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">Predictions Made</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-premium">0</div>
+        <div class="stat-label">Premium Customers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-avg-conf">–</div>
+        <div class="stat-label">Avg Confidence</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-top-tier">–</div>
+        <div class="stat-label">Most Common Tier</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="predictor">🔮 Predictor</button>
+      <button class="tab-btn" data-tab="charts">📈 Charts</button>
+      <button class="tab-btn" data-tab="history">📋 History</button>
+      <button class="tab-btn" data-tab="batch">📂 Batch Upload</button>
+    </div>
+
+    <!-- ── Tab: Predictor ────────────────────────────────────────────────── -->
+    <div id="tab-predictor" class="tab-panel active">
+      <div class="layout">
+
+        <!-- Input form -->
+        <div class="card">
+          <div class="card-header">
+            <h2>👤 Customer Profile</h2>
+          </div>
+          <div class="card-body">
+            <form id="prediction-form" novalidate>
+              <div class="form-grid">
+
+                <!-- Demographics -->
+                <div class="section-divider full-width">Demographics</div>
+
+                <div class="form-group">
+                  <label class="form-label" for="education">Education</label>
+                  <select id="education" name="education" class="form-control" required>
+                    <option value="">Select education…</option>
+                    <option value="Basic">Basic</option>
+                    <option value="2n Cycle">2nd Cycle</option>
+                    <option value="Graduation">Graduation</option>
+                    <option value="Master">Master</option>
+                    <option value="PhD">PhD</option>
+                  </select>
+                  <span id="err-education" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="marital">Marital Status</label>
+                  <select id="marital" name="marital" class="form-control" required>
+                    <option value="">Select status…</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Together">Together</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widow">Widow</option>
+                  </select>
+                  <span id="err-marital" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="kids">Kids at Home</label>
+                  <select id="kids" name="kids" class="form-control">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="teens">Teens at Home</label>
+                  <select id="teens" name="teens" class="form-control">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+
+                <!-- Financial -->
+                <div class="section-divider full-width">Financial & Engagement</div>
+
+                <div class="form-group">
+                  <label class="form-label" for="income">Annual Income ($)</label>
+                  <input
+                    id="income" name="income" type="number" class="form-control"
+                    placeholder="e.g. 55000" min="0" max="250000" step="1000" required
+                  />
+                  <span id="err-income" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="recency">Recency (days since last purchase)</label>
+                  <input
+                    id="recency" name="recency" type="number" class="form-control"
+                    placeholder="e.g. 30" min="0" max="365" required
+                  />
+                  <span id="err-recency" class="field-error"></span>
+                </div>
+
+                <!-- Spending -->
+                <div class="section-divider full-width">Annual Spending Breakdown ($)</div>
+
+                <div class="form-group">
+                  <label class="form-label" for="wines">Wines</label>
+                  <input id="wines" name="wines" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-wines" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="fruits">Fruits</label>
+                  <input id="fruits" name="fruits" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-fruits" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="meat">Meat Products</label>
+                  <input id="meat" name="meat" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-meat" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="fish">Fish Products</label>
+                  <input id="fish" name="fish" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-fish" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="sweets">Sweets</label>
+                  <input id="sweets" name="sweets" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-sweets" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="gold">Gold Products</label>
+                  <input id="gold" name="gold" type="number" class="form-control" placeholder="0" min="0" max="2000" />
+                  <span id="err-gold" class="field-error"></span>
+                </div>
+
+                <!-- Purchase channels -->
+                <div class="section-divider full-width">Purchase Channels (last 2 years)</div>
+
+                <div class="form-group">
+                  <label class="form-label" for="webPurchases">Web Purchases</label>
+                  <input id="webPurchases" name="webPurchases" type="number" class="form-control" placeholder="0" min="0" max="50" />
+                  <span id="err-webPurchases" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="catalogPurchases">Catalog Purchases</label>
+                  <input id="catalogPurchases" name="catalogPurchases" type="number" class="form-control" placeholder="0" min="0" max="50" />
+                  <span id="err-catalogPurchases" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="storePurchases">Store Purchases</label>
+                  <input id="storePurchases" name="storePurchases" type="number" class="form-control" placeholder="0" min="0" max="50" />
+                  <span id="err-storePurchases" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="dealsPurchases">Deals Used</label>
+                  <input id="dealsPurchases" name="dealsPurchases" type="number" class="form-control" placeholder="0" min="0" max="50" />
+                  <span id="err-dealsPurchases" class="field-error"></span>
+                </div>
+
+                <!-- Campaign responses -->
+                <div class="section-divider full-width">Campaign Responses</div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Accepted Campaigns</label>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="cmp1" /> Campaign 1</label>
+                    <label class="checkbox-label"><input type="checkbox" name="cmp2" /> Campaign 2</label>
+                    <label class="checkbox-label"><input type="checkbox" name="cmp3" /> Campaign 3</label>
+                    <label class="checkbox-label"><input type="checkbox" name="cmp4" /> Campaign 4</label>
+                    <label class="checkbox-label"><input type="checkbox" name="cmp5" /> Campaign 5</label>
+                  </div>
+                </div>
+
+              </div><!-- /form-grid -->
+
+              <div class="form-actions">
+                <button type="submit" id="predict-btn" class="btn btn-primary btn-lg">🔮 Predict Tier</button>
+                <button type="button" id="reset-btn" class="btn btn-secondary">↺ Reset</button>
+              </div>
+            </form>
+          </div>
+        </div><!-- /card -->
+
+        <!-- Result panel -->
+        <div class="card">
+          <div class="card-header">
+            <h2>🏅 Prediction Result</h2>
+            <div style="display:flex;gap:0.5rem">
+              <button id="export-result-btn" class="btn btn-secondary hidden" title="Export as CSV">⬇ CSV</button>
+              <button id="export-json-btn" class="btn btn-secondary hidden" title="Export as JSON">⬇ JSON</button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- Placeholder before prediction -->
+            <div id="result-placeholder" class="result-placeholder">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="38" stroke="currentColor" stroke-width="2"/>
+                <path d="M25 40h30M40 25v30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <p>Fill in the customer profile<br/>and click <strong>Predict Tier</strong></p>
+            </div>
+
+            <!-- Result content (hidden until prediction) -->
+            <div id="result-content" class="result-content">
+
+              <!-- Tier badge -->
+              <div class="tier-badge-container">
+                <div id="tier-icon" class="tier-icon">👑</div>
+                <div id="tier-name" class="tier-name">–</div>
+                <div id="tier-badge"></div>
+                <p id="tier-description" class="tier-description"></p>
+              </div>
+
+              <!-- Confidence -->
+              <div class="confidence-section">
+                <div class="confidence-header">
+                  <span>Model Confidence</span>
+                  <span id="confidence-pct" style="font-weight:700;color:var(--accent)">–</span>
+                </div>
+                <div class="progress-bar">
+                  <div id="confidence-fill" class="progress-fill"></div>
+                </div>
+              </div>
+
+              <!-- Feature scores -->
+              <div style="margin-bottom:1.25rem">
+                <p style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem;font-weight:600">
+                  Feature Scores
+                </p>
+                <div id="score-grid" class="score-grid"></div>
+              </div>
+
+              <!-- Tier probabilities -->
+              <div style="margin-bottom:1.25rem">
+                <p style="font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem;font-weight:600">
+                  Tier Probabilities
+                </p>
+                <div id="prob-list" class="prob-list"></div>
+              </div>
+
+              <!-- Recommendations -->
+              <div class="recommendations">
+                <h3>Recommended Actions</h3>
+                <ul id="rec-list" class="rec-list"></ul>
+              </div>
+
+            </div><!-- /result-content -->
+          </div>
+        </div><!-- /card -->
+
+      </div><!-- /layout -->
+    </div><!-- /tab-predictor -->
+
+    <!-- ── Tab: Charts ───────────────────────────────────────────────────── -->
+    <div id="tab-charts" class="tab-panel">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📊 Spending Breakdown (Current Prediction)</h3>
+          <div class="chart-wrapper">
+            <canvas id="spending-chart"></canvas>
+          </div>
+          <p class="text-sm text-muted" style="margin-top:0.5rem;text-align:center">
+            Run a prediction to populate this chart
+          </p>
+        </div>
+        <div class="chart-card">
+          <h3>🍩 Tier Distribution (History)</h3>
+          <div class="chart-wrapper">
+            <canvas id="tier-dist-chart"></canvas>
+          </div>
+          <p class="text-sm text-muted" style="margin-top:0.5rem;text-align:center">
+            Aggregated over all saved predictions
+          </p>
+        </div>
+      </div>
+    </div><!-- /tab-charts -->
+
+    <!-- ── Tab: History ──────────────────────────────────────────────────── -->
+    <div id="tab-history" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2>📋 Prediction History</h2>
+          <div style="display:flex;gap:0.5rem">
+            <button id="export-history-btn" class="btn btn-secondary">⬇ Export CSV</button>
+            <button id="clear-history-btn" class="btn btn-danger">🗑 Clear</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="history-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Tier</th>
+                  <th>Confidence</th>
+                  <th>Income</th>
+                  <th>Total Spend</th>
+                  <th>Recency</th>
+                  <th>Campaigns</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <tr><td colspan="7" class="empty-state">No predictions yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-history -->
+
+    <!-- ── Tab: Batch Upload ─────────────────────────────────────────────── -->
+    <div id="tab-batch" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2>📂 Batch CSV Upload</h2>
+        </div>
+        <div class="card-body">
+          <p class="text-sm text-muted" style="margin-bottom:1rem">
+            Upload a CSV file in the <strong>marketing_campaign.csv</strong> format (tab-separated).
+            Each row will be predicted and added to your history automatically.
+          </p>
+
+          <div id="upload-area" class="upload-area">
+            <div class="upload-icon">📁</div>
+            <p><strong>Click to browse</strong> or drag &amp; drop a CSV file here</p>
+            <p class="text-sm text-muted" style="margin-top:0.4rem">Accepts .csv files only</p>
+            <input type="file" id="csv-input" accept=".csv" />
+          </div>
+
+          <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;font-size:0.85rem;color:var(--text-secondary)">
+            <strong>Expected columns (tab-separated):</strong><br/>
+            <code style="font-size:0.8rem;line-height:2">
+              Income, Kidhome, Teenhome, Recency, Education, Marital_Status,
+              MntWines, MntFruits, MntMeatProducts, MntFishProducts, MntSweetProducts, MntGoldProds,
+              NumWebPurchases, NumCatalogPurchases, NumStorePurchases, NumDealsPurchases,
+              AcceptedCmp1, AcceptedCmp2, AcceptedCmp3, AcceptedCmp4, AcceptedCmp5
+            </code>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-batch -->
+
+  </div><!-- /container -->
+</main>
+
+<!-- ── Toast container ──────────────────────────────────────────────────────── -->
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<!-- Scripts (order matters: utils → model → script) -->
+<script src="utils.js"></script>
+<script src="model.js"></script>
+<script src="script.js"></script>
+
+<!-- Make export-json-btn visible after a prediction -->
+<script>
+  // Show JSON export button alongside CSV when result appears
+  const obs = new MutationObserver(() => {
+    const visible = document.getElementById('result-content')?.classList.contains('visible');
+    const btn = document.getElementById('export-json-btn');
+    if (btn) btn.classList.toggle('hidden', !visible);
+  });
+  const content = document.getElementById('result-content');
+  if (content) obs.observe(content, { attributes: true, attributeFilter: ['class'] });
+</script>
+
+</body>
+</html>

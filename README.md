@@ -121,14 +121,103 @@ pip install pandas numpy scikit-learn matplotlib seaborn plotly xgboost catboost
 ```
 Marketing-Campaign-Analysis-Response-Prediction-Python-ML-/
 ├── README.md                          # Project documentation
-├── notebooks/                         # Jupyter notebooks
-│   ├── 01_EDA.ipynb                  # Exploratory Data Analysis
-│   ├── 02_Feature_Engineering.ipynb  # Feature creation and preprocessing
-│   ├── 03_Customer_Segmentation.ipynb # Clustering analysis
-│   └── 04_Prediction_Models.ipynb    # Model building and evaluation
-└── data/                              # Dataset files
-    └── marketing_campaign_data.csv   # Raw customer data
+├── CA2.ipynb                          # Jupyter notebook – EDA & ML analysis
+├── marketing_campaign.csv             # Raw customer dataset (tab-separated)
+│
+│  ── Web Application ──
+├── index.html                         # Main application page
+├── styles.css                         # Responsive CSS (dark/light mode)
+├── script.js                          # Form logic, charts & history
+├── model.js                           # Client-side tier prediction engine
+└── utils.js                           # Data processing helpers
 ```
+
+---
+
+## 🌐 CRM Customer Tier Prediction Web App
+
+A fully client-side web application that lets CRM teams predict customer value tiers
+(Premium / Standard / Basic / Low-Value) instantly in the browser — no server required.
+
+### Features
+
+| Feature | Details |
+|---|---|
+| **Tier Prediction** | Real-time scoring based on income, spending, recency, education, purchase frequency, and campaign engagement |
+| **Confidence Score** | Softmax probability distribution across all four tiers |
+| **Feature Scores** | Visual breakdown of each input dimension's contribution |
+| **Recommendations** | Tier-specific CRM action items |
+| **Charts** | Spending breakdown bar chart + tier distribution donut chart (Chart.js) |
+| **Prediction History** | All predictions persisted in browser `localStorage` (up to 100 records) |
+| **CSV Export** | Export history or individual results as `.csv` |
+| **JSON Export** | Export detailed result payload as `.json` |
+| **Batch Upload** | Upload a `marketing_campaign.csv`-format file to predict multiple rows at once |
+| **Dark / Light Mode** | Toggle persisted per browser |
+| **Responsive Design** | Mobile-first layout with CSS Grid/Flexbox |
+| **No dependencies** | Vanilla HTML/CSS/JS — just open `index.html` in a browser |
+
+### Running the Web App
+
+Simply open `index.html` in any modern browser:
+
+```bash
+# Option 1 – Double-click index.html in your file manager
+
+# Option 2 – Serve locally with Python
+python -m http.server 8080
+# then navigate to http://localhost:8080
+
+# Option 3 – VS Code Live Server extension
+```
+
+### Tier Classification Logic
+
+The prediction engine (`model.js`) computes a weighted composite score from six normalised dimensions:
+
+| Dimension | Weight | Description |
+|---|---|---|
+| Income | 28 % | Annual household income vs dataset range (0–$120 k) |
+| Spending | 30 % | Total annual product spending vs dataset range (0–$2 525) |
+| Recency | 18 % | Days since last purchase (inverted – lower is better) |
+| Purchase Frequency | 12 % | Web + catalogue + store purchases |
+| Campaign Acceptance | 8 % | Number of campaigns accepted (0–5) |
+| Education | 4 % | Education level ordinal encoding |
+
+**Tier thresholds:**
+
+| Tier | Score |
+|---|---|
+| 👑 Premium | ≥ 0.65 |
+| ⭐ Standard | ≥ 0.38 |
+| 🌱 Basic | ≥ 0.18 |
+| 🔔 Low-Value | < 0.18 |
+
+### Input Fields
+
+- **Education**: Basic / 2nd Cycle / Graduation / Master / PhD
+- **Marital Status**: Single / Married / Together / Divorced / Widow
+- **Kids & Teens at Home**: 0–3 each
+- **Annual Income**: in USD
+- **Recency**: days since last purchase
+- **Spending**: annual amounts for Wines, Fruits, Meat, Fish, Sweets, Gold
+- **Purchase Channels**: Web, Catalogue, Store purchases; Deals used
+- **Campaigns Accepted**: checkboxes for Campaigns 1–5
+
+### Batch CSV Upload
+
+Upload a tab-separated CSV matching the `marketing_campaign.csv` schema.
+Required columns: `Income`, `Kidhome`, `Teenhome`, `Recency`, `Education`, `Marital_Status`,
+`MntWines`, `MntFruits`, `MntMeatProducts`, `MntFishProducts`, `MntSweetProducts`, `MntGoldProds`,
+`NumWebPurchases`, `NumCatalogPurchases`, `NumStorePurchases`, `NumDealsPurchases`,
+`AcceptedCmp1`–`AcceptedCmp5`.
+
+### Technical Stack (Web App)
+
+- **HTML5** – semantic structure
+- **CSS3** – custom properties, flexbox/grid, dark mode via `data-theme` attribute
+- **Vanilla JavaScript (ES2020)** – no frameworks or jQuery
+- **Chart.js 4** – visualisations (loaded from CDN)
+- **localStorage** – client-side persistence
 
 ---
 
